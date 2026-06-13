@@ -1,0 +1,31 @@
+{
+  "_comment": "ai-radar 数据源清单。method=rss/hackernews/github_trending/hf_papers/hf_models/reddit 由 fetch.py 抓取；method=dynamic 的源 fetch.py 跳过并输出到 dynamic_sources，由宿主 agent 用 WebSearch/WebFetch 补抓。category 为来源大类（vendor/paradigm/community/media/social），与 8 类内容分类不同——内容分类由 agent 加工时判定。",
+  "sources": [
+    {"name": "OpenAI News", "category": "vendor", "method": "rss", "url": "https://openai.com/news/rss.xml", "enabled": true},
+    {"name": "Anthropic News", "category": "vendor", "method": "rss", "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml", "enabled": true},
+    {"name": "Google DeepMind", "category": "vendor", "method": "rss", "url": "https://deepmind.google/blog/rss.xml", "enabled": true},
+    {"name": "Google AI Blog", "category": "vendor", "method": "rss", "url": "https://blog.google/technology/ai/rss/", "enabled": true},
+    {"name": "Meta AI Blog", "category": "vendor", "method": "rss", "url": "https://ai.meta.com/blog/rss/", "enabled": false},
+    {"name": "Microsoft AI", "category": "vendor", "method": "rss", "url": "https://news.microsoft.com/source/topics/ai/feed/", "enabled": true},
+    {"name": "HuggingFace Blog", "category": "vendor", "method": "rss", "url": "https://huggingface.co/blog/feed.xml", "enabled": true},
+    {"name": "Mistral News", "category": "vendor", "method": "rss", "url": "https://mistral.ai/feed.xml", "enabled": false},
+    {"name": "Claude Code Releases", "category": "paradigm", "method": "rss", "url": "https://github.com/anthropics/claude-code/releases.atom", "enabled": true},
+    {"name": "Cursor Changelog", "category": "paradigm", "method": "rss", "url": "https://www.cursor.com/changelog/rss.xml", "enabled": true},
+    {"name": "GitHub Blog", "category": "paradigm", "method": "rss", "url": "https://github.blog/feed/", "enabled": true},
+    {"name": "Vercel Blog", "category": "paradigm", "method": "rss", "url": "https://vercel.com/atom", "enabled": true},
+    {"name": "LangChain Blog", "category": "paradigm", "method": "rss", "url": "https://blog.langchain.dev/rss/", "enabled": true},
+    {"name": "Hacker News AI", "category": "community", "method": "hackernews", "url": "https://hn.algolia.com/api/v1/search_by_date", "enabled": true},
+    {"name": "GitHub Trending", "category": "community", "method": "github_trending", "url": "https://github.com/trending?since=daily", "enabled": true},
+    {"name": "HF Daily Papers", "category": "community", "method": "hf_papers", "url": "https://huggingface.co/api/daily_papers", "enabled": true},
+    {"name": "HF Trending Models", "category": "community", "method": "hf_models", "url": "https://huggingface.co/api/models", "enabled": true},
+    {"name": "r/LocalLLaMA", "category": "community", "method": "reddit", "url": "https://www.reddit.com/r/LocalLLaMA/top.json?t=day&limit=25", "enabled": false},
+    {"name": "r/MachineLearning", "category": "community", "method": "reddit", "url": "https://www.reddit.com/r/MachineLearning/top.json?t=day&limit=25", "enabled": false},
+    {"name": "TechCrunch AI", "category": "media", "method": "rss", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "enabled": true},
+    {"name": "The Verge AI", "category": "media", "method": "rss", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "enabled": true},
+    {"name": "VentureBeat AI", "category": "media", "method": "rss", "url": "https://venturebeat.com/category/ai/feed/", "enabled": true},
+    {"name": "Ben's Bites", "category": "media", "method": "rss", "url": "https://bensbites.beehiiv.com/feed", "enabled": false},
+    {"name": "Product Hunt", "category": "media", "method": "rss", "url": "https://www.producthunt.com/feed", "enabled": true},
+    {"name": "X: @sama", "category": "social", "method": "dynamic", "query": "Sam Altman OpenAI 最近动态 site:x.com/sama OR site:nitter", "enabled": true},
+    {"name": "X: @karpathy", "category": "social", "method": "dynamic", "query": "Andrej Karpathy 最近推文动态", "enabled": true}
+  ]
+}
