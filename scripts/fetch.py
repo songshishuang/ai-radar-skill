@@ -168,7 +168,7 @@ def fetch_rss(src: dict, cutoff_ts: float) -> list:
 
 
 def fetch_hackernews(src: dict, cutoff_ts: float) -> list:
-    keywords = ["AI", "LLM", "GPT", "Claude", "Gemini", "agent", "open source model"]
+    keywords = ["AI", "LLM", "GPT", "Claude", "Gemini", "agent", "open source model", "MCP", "agent skill", "Claude skill"]
     since = int(cutoff_ts)
     seen, out = set(), []
     for kw in keywords:
@@ -238,6 +238,28 @@ def fetch_hf_models(src: dict, cutoff_ts: float) -> list:
                 "published_at": m.get("createdAt"),
                 "summary_raw": f"pipeline={m.get('pipeline_tag', '')}; downloads={m.get('downloads', 0)}; likes={m.get('likes', 0)}",
                 "extra": {"likes": m.get("likes", 0), "downloads": m.get("downloads", 0)},
+            }
+        )
+    return out
+
+
+def fetch_hf_spaces(src: dict, cutoff_ts: float) -> list:
+    """HF Spaces trending（热门 AI 应用 demo）。"""
+    url = "https://huggingface.co/api/spaces?sort=trendingScore&direction=-1&limit=15"
+    out = []
+    for s in http_get_json(url):
+        sid = s.get("id")
+        if not sid:
+            continue
+        out.append(
+            {
+                "title": f"HF Space: {sid}",
+                "url": f"https://huggingface.co/spaces/{sid}",
+                "source": src["name"],
+                "category": src["category"],
+                "published_at": s.get("createdAt"),
+                "summary_raw": f"AI 应用 demo（sdk: {s.get('sdk', '')}）; likes: {s.get('likes', 0)}",
+                "extra": {"likes": s.get("likes", 0), "sdk": s.get("sdk", "")},
             }
         )
     return out
@@ -324,6 +346,7 @@ FETCHERS = {
     "hackernews": fetch_hackernews,
     "hf_papers": fetch_hf_papers,
     "hf_models": fetch_hf_models,
+    "hf_spaces": fetch_hf_spaces,
     "reddit": fetch_reddit,
     "github_trending": fetch_github_trending,
 }

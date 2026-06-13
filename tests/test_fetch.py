@@ -106,6 +106,11 @@ def test_github_trending_parser():
     assert any("pasta" in r for r in p.repos)
 
 
+def test_hf_spaces_registered():
+    # 社区 / AI 应用跟踪：HF Spaces 抓取器已注册
+    assert "hf_spaces" in fetch.FETCHERS
+
+
 # ── 零依赖 runner ──
 def _main():
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
