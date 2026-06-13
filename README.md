@@ -1,8 +1,21 @@
-# ai-radar
+# ai-radar — AI 行业情报雷达
 
-> 一句话要一份 AI 行业情报研报。聚合国外核心 AI 源 → 宿主 agent 直接出中文金字塔研报，**零 API key、零部署**。
+> 一句话要一份 AI 日报/周报/月报。替你**盯住国外核心 AI 主体**，在通稿泛滥里**拣出真信号**，宿主 agent 直接出中文金字塔研报。
+>
+> `零 API key` · `零 pip 依赖` · `零部署`
 
-ai-radar 是一个 [Agent Skill](https://docs.claude.com/en/docs/claude-code/skills)。装好后，在你的 agent 工具里说一句「**给我今天的 AI 日报**」即可触发：脚本抓取 → agent 摘要/分类/评分/解读 → 输出一份 2 分钟读完的中文研报（⚡速览 → 🔥必读 → 📌关注 → 📚附录）。
+```bash
+# 一行装（Claude Code）
+cp -r ai-radar ~/.claude/skills/ai-radar
+```
+
+装好后说一句「**给我今天的 AI 日报**」即触发：脚本抓取 → agent 摘要/分类/评分/解读 → 一份 2 分钟读完的中文研报（⚡速览 → 🔥必读 → 📌关注 → 📚附录）。
+
+**先看一眼产出** → [`samples/daily-sample.md`](samples/daily-sample.md)（真实生成：59 条情报 + 5 个 PM 视角深度头条）
+
+唯一依赖：**Python 3.8+**（抓取脚本纯标准库，无需 `pip install`；装了 `feedparser`/`httpx` 会自动启用更鲁棒解析）。
+
+ai-radar 是一个 [Agent Skill](https://docs.claude.com/en/docs/claude-code/skills)。它不是又一个新闻聚合器——差异在三点：**① 盯主体**（追 OpenAI/Anthropic 等核心 AI 主体的官方源，而非泛搜关键词）；**② 拣真信号**（按重要度评分 + 信源置信度护栏，过滤通稿与未证实传闻）；**③ 双档覆盖**（轻档现抓零配置 / 重档连自建后端沉淀历史）。
 
 ## 它能做什么
 

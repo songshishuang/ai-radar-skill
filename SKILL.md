@@ -1,13 +1,15 @@
 ---
 name: ai-radar
 description: >-
-  生成 AI 行业情报研报（日报 / 周报 / 月报）——聚合国外核心 AI 信息源（OpenAI / Anthropic / Google /
-  Meta / Mistral 等厂商官方源 + Hacker News + HuggingFace 论文与模型 + TechCrunch/The Verge 等行业媒体 +
-  X 关键人物），由你（宿主 agent）直接做中文摘要、8 类分类、实体标注、重要度评分，并按 PM / 工程 / 投资 / 研究
-  视角产出「结论先行」的金字塔研报，全程零 API key。当用户说「AI 日报 / 周报 / 月报」「今天 / 这周 AI 有什么」
-  「最近 AI 动态」「AI 情报 / AI 资讯研报」「追踪 / 盯一下 AI 前沿」「AI radar」「大厂 AI 进展」「AI 圈发生了什么」，
-  或想定期了解模型发布、开源项目、产研提效工具、行业产品与融资动态时，都应使用本 skill。即使没明说「研报」二字，
-  只要意图是「把分散的英文 AI 资讯聚合成一份能 2 分钟读完的中文简报」，也要触发本 skill，而不要自己漫无目的地搜索。
+  AI 行业情报雷达：一句话要一份 AI 日报 / 周报 / 月报。替你盯住国外核心 AI 主体（OpenAI / Anthropic /
+  Google / Meta / Mistral 等厂商官方源 + Hacker News + HuggingFace 论文与模型 + TechCrunch/The Verge 等
+  行业媒体 + X 关键人物），在通稿泛滥里**按重要度拣出真信号**，由你（宿主 agent）直接做中文摘要、8 类分类、
+  实体标注、1-10 评分，按 PM / 工程 / 投资 / 研究视角产出「结论先行 + 每条锚定原始来源」的金字塔研报，零 API key、
+  零部署。当用户说「AI 日报 / 周报 / 月报」「今天 / 这周 AI 有什么」「最近 AI 动态」「AI 情报 / AI 资讯研报」
+  「追踪 / 盯一下 AI 前沿」「AI radar」「大厂 AI 进展」「AI 圈发生了什么」，或想定期了解模型发布、开源项目、
+  产研提效工具、行业产品与融资动态时，都应使用本 skill；即使没明说「研报」二字，只要意图是把分散英文 AI 资讯
+  聚成一份 2 分钟读完的中文简报，也要触发，而不要自己漫无目的地搜索。不要用于：单条事实速查（如「Claude 上下文
+  窗口多大」直接回答即可）、用户明确要以中文 / 国内 AI 源为主、或用户在开发 AI 产品 / 写代码（那是产品开发，不是情报聚合）。
 ---
 
 # ai-radar — AI 行业情报研报生成器
@@ -122,6 +124,16 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 - 单源抓取失败由脚本隔离（`failed_sources`），不影响整体；在研报尾注如实标注失败/降级源数量。
 - 信息不足（如周末资讯少）就如实说「本期信息较少」，不要为凑数拔高重要度。
 - 时间敏感：published_at 缺失的条目保留但不假设其新鲜度。
+- **全源失败兜底**：若 `fetch.py` 返回空 items 且动态源也抓不到，如实告知「本期未抓到新条目（数据源可能临时不可用）」，不要用旧知识编造"今天的"新闻。
+
+## 边界与安全
+
+本 skill 只读聚合公开信息，行为边界明确，便于你放心在任意项目里调用：
+
+- `scripts/fetch.py` **只读抓取**：仅对源清单发 HTTP GET，不写任何文件、不执行任意命令、不外发用户数据。
+- **落盘只在 `./ai-radar-reports/`**：写报告前若同名文件已存在，先告知用户、确认再覆盖。
+- **不做分发**：skill 只产出研报，绝不声称已发邮件/已推送（那是自托管完整版后端的事）。
+- **不盲信用户喂的未证实信息**：用户口头断言的"新闻"须经 fetch/WebSearch 抓源核实，抓不到权威来源则按信源置信度护栏降级处理。
 
 ## 资源索引
 
@@ -131,3 +143,5 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 - `references/lenses.md` — 4 视角的评分权重与解读重点
 - `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引
 - `assets/sample-report.md` — 一份样例输出
+- `samples/daily-sample.md` — 真实产出样本（59 条 + 5 深度头条，看一眼产物长什么样）
+- `tests/test_fetch.py` — 抓取器离线测试（7/7 绿）；`tests/eval-prompts.md` — 工作流 eval（3 题四件套）
