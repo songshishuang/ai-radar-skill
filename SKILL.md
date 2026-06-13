@@ -1,0 +1,127 @@
+---
+name: ai-radar
+description: >-
+  生成 AI 行业情报研报（日报 / 周报 / 月报）——聚合国外核心 AI 信息源（OpenAI / Anthropic / Google /
+  Meta / Mistral 等厂商官方源 + Hacker News + HuggingFace 论文与模型 + TechCrunch/The Verge 等行业媒体 +
+  X 关键人物），由你（宿主 agent）直接做中文摘要、8 类分类、实体标注、重要度评分，并按 PM / 工程 / 投资 / 研究
+  视角产出「结论先行」的金字塔研报，全程零 API key。当用户说「AI 日报 / 周报 / 月报」「今天 / 这周 AI 有什么」
+  「最近 AI 动态」「AI 情报 / AI 资讯研报」「追踪 / 盯一下 AI 前沿」「AI radar」「大厂 AI 进展」「AI 圈发生了什么」，
+  或想定期了解模型发布、开源项目、产研提效工具、行业产品与融资动态时，都应使用本 skill。即使没明说「研报」二字，
+  只要意图是「把分散的英文 AI 资讯聚合成一份能 2 分钟读完的中文简报」，也要触发本 skill，而不要自己漫无目的地搜索。
+---
+
+# ai-radar — AI 行业情报研报生成器
+
+把分散在几十个英文源里的 AI 动态，聚合成一份**结论先行、2 分钟读完**的中文研报。你（宿主 agent）本身就是 LLM——所以摘要、分类、评分、深度解读全部由你直接完成，**不需要任何 API key**。
+
+## 核心理念
+
+- **抓取靠脚本，思考靠你**：确定性的拉取/解析交给 `scripts/fetch.py`（自包含、零依赖），需要判断力的加工（中文摘要、重要度、视角解读）由你做。
+- **结论先行**：读者要的是「这事对我意味着什么 + 我该做什么」，不是事件的逐字复述。正文极简，深度全文沉底到附录。
+- **双模式**：能连到用户自己运行的「AI 情报站」就直接拉它**已生成的报告**（与其网站同源、最快）；连不到就本地现抓现做。
+
+## 第一步：判断运行模式
+
+检查环境变量 `AI_RADAR_API`（如 `https://songshishuang.github.io/ai-radar` 的后端，或 `http://localhost:8000`）：
+
+- **设了 → 连接模式**（优先）：直接复用用户实例已生成的报告，省时且与其网站字节级同源。见下方「连接模式」。
+- **没设 → 独立模式**：用内置脚本现场抓取 + 你来加工生成。见下方「独立模式」。
+
+> 用户也可显式指定：「用独立模式」「不要连后端」→ 直接走独立模式。
+
+## 参数
+
+从用户话语里解析（都有合理默认，不必追问）：
+
+| 参数 | 取值 | 默认 | 说明 |
+|---|---|---|---|
+| `range` | daily / weekly / monthly | daily | 对应时间窗 36h / 7d / 30d |
+| `lens` | pm / engineer / investor / researcher | pm | 研报视角，详见 `references/lenses.md` |
+| `categories` | vendor,paradigm,community,media,social 子集 | 全部 | 来源大类过滤 |
+
+「AI 周报」→ range=weekly；「从工程师视角」→ lens=engineer；「只看大厂和开源」→ categories=vendor,community。
+
+---
+
+## 连接模式（AI_RADAR_API 已设）
+
+1. 算出目标 period：daily→今天 `YYYY-MM-DD`、weekly→`YYYY-Www`（ISO 周）、monthly→`YYYY-MM`。
+2. `GET {AI_RADAR_API}/api/reports/{type}/{period}`：
+   - **命中**：拿到已生成报告的 `markdown` 字段，直接呈现给用户（它已是金字塔结构）。若拿不到精确 period，改用 `GET {AI_RADAR_API}/api/reports?type={type}&limit=1` 取最新一份。
+   - **lens ≠ pm**：实例报告是 PM 视角。改为 `GET {AI_RADAR_API}/api/items?min_score=6&limit=60` 取已加工条目，按 `references/lenses.md` 的目标视角**重新综合**成研报（数据同源、视角不同）。
+3. 连接失败（超时 / 4xx / 5xx）→ 自动降级到独立模式，并在报告开头注明「实例未连通，已现场抓取」。
+
+---
+
+## 独立模式（现抓现做）
+
+### 1. 抓取（脚本）
+
+```bash
+python ai-radar/scripts/fetch.py --since 36h          # daily
+python ai-radar/scripts/fetch.py --since 7d           # weekly
+python ai-radar/scripts/fetch.py --since 30d          # monthly
+# 可选：--categories vendor,community   --sources 自定义 sources.json
+```
+
+脚本裸 Python 3.8+ 即可跑（标准库优先；装了 `feedparser`/`httpx` 会自动用更鲁棒的路径）。它输出一段 JSON：
+
+```json
+{
+  "items": [{"title","url","source","category","published_at","summary_raw","extra"}],
+  "dynamic_sources": [{"name","query"}],
+  "failed_sources": ["name: reason"],
+  "stats": {"fetched","sources_ok","sources_failed","window_hours"}
+}
+```
+
+### 2. 补抓动态源（你的工具）
+
+对 `dynamic_sources` 里的每一项（X/Twitter 等无 RSS 的源），用 **WebSearch** 按其 `query` 搜最近动态，挑出真有信息量的 1-3 条，补进条目池。抓不到就跳过——绝不编造。
+
+### 3. 加工（你来做，逐条）
+
+对每条 `items`，生成：
+
+- `summary_zh`：80-150 字中文摘要，**只讲发生了什么 + 为何重要**，不堆砌。
+- `category`：8 类之一 —— `model-release`(模型发布) / `dev-tooling`(产研工具) / `agent-infra`(Agent基建) / `research`(前沿研究) / `opensource`(开源生态) / `product-launch`(产品动态) / `business`(商业资本) / `policy-safety`(政策安全)。按内容实质判断，别套用来源大类。
+- `entities`：涉及的公司/产品/模型规范名（如 `OpenAI`、`Claude`、`DeepSeek-R1`），最多 5 个。
+- `importance` 1-10：行业级大事 8-10；从业者该关注 5-7；常规 1-4。**按 lens 调权重**（见 `references/lenses.md`）。
+
+去重：同一事件多源报道合并为一条，保留全部来源链接。
+
+### 4. 生成研报（金字塔结构）
+
+严格按 `references/report-format.md` 的模板产出，并套用 `references/lenses.md` 里选定视角的解读重点。核心结构：
+
+```
+☕ 阅读预算一行
+## ⚡ 今日速览       —— 3 句话讲完今天
+## 🔥 今日必读       —— ≥8 分 Top3-5，每条 3 行（标题 / ⚡so-what 结论 / 👉首要行动）
+## 📌 值得关注       —— 6-7 分，每条 1 行
+---
+尾注：收录 N 条 · 其余见来源
+## 📚 附录·深度解读   —— 必读条目的六段全文，沉底，想深入再看
+```
+
+### 5. 输出
+
+- 在对话里完整呈现研报。
+- 询问或默认落盘：`./ai-radar-reports/{range}-{period}.md`（便于用户归档/喂给其它工具）。
+
+---
+
+## 降级与诚实
+
+- 单源抓取失败由脚本隔离（`failed_sources`），不影响整体；在研报尾注如实标注失败/降级源数量。
+- 信息不足（如周末资讯少）就如实说「本期信息较少」，不要为凑数拔高重要度。
+- 时间敏感：published_at 缺失的条目保留但不假设其新鲜度。
+
+## 资源索引
+
+- `scripts/fetch.py` — 自包含抓取器（RSS/Atom + HN/HF/Reddit/GitHub Trending）
+- `scripts/sources.json` — 26 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）
+- `references/report-format.md` — 金字塔研报模板与写作要点（生成前必读）
+- `references/lenses.md` — 4 视角的评分权重与解读重点
+- `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引
+- `assets/sample-report.md` — 一份样例输出
