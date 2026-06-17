@@ -6,7 +6,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)
 ![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-3776ab)
 ![dependencies: zero](https://img.shields.io/badge/dependencies-zero-0ea5e9)
-![tests: 7/7](https://img.shields.io/badge/tests-7%2F7%20passing-22c55e)
+![tests: 8/8](https://img.shields.io/badge/tests-8%2F8%20passing-22c55e)
 ![zero API key](https://img.shields.io/badge/API%20key-not%20required-f59e0b)
 
 ```bash
@@ -24,14 +24,16 @@ cp -r ai-radar ~/.claude/skills/ai-radar
 
 ## 凭什么不是又一个新闻聚合器
 
+> 同类开源工具（如 6.6k★ 的 [Horizon](https://github.com/Thysrael/Horizon)）已把「抓取 → 摘要 → 推送」做得很卷，ai-radar 的差异在**编辑判断力**层——下面这几项同类少有系统化做：
+
 | | 别的聚合器 | ai-radar |
 |---|---|---|
-| **① 盯主体** | 泛搜关键词 | 追 OpenAI/Anthropic 等核心 AI 主体的**官方源 + 实体标注** |
-| **② 拣真信号** | 按时间堆列表 | **重要度评分 + 信源置信度护栏**，过滤通稿与未证实传闻 |
-| **③ 双档覆盖** | 单一形态 | 轻档现抓零配置 / 重档连自建后端**沉淀历史** |
-| **④ 结论先行** | 摘要堆叠 | 金字塔结构，每条必读带**一句话结论 + 行动 + 原始来源** |
+| **① 信源置信度护栏** | LLM 摘要默认信源即真 | 二手聚合站 / 未证实传闻**降级、不进必读**——一条假必读比漏一条真新闻更糟 |
+| **② 角色化多视角** | 人人同一份 | 同一批新闻按 **PM / 工程 / 投资 / 研究** 换评分权重与解读重点 |
+| **③ 结论先行** | 摘要堆叠 | 金字塔结构，每条必读带**一句话结论 + 行动 + 原始来源** |
+| **④ 盯主体 · 中文** | 泛搜英文关键词 | 追 OpenAI/Anthropic 等官方源 + 实体标注，**中文输出**（同类多英文优先）|
 
-全程**零 API key**——摘要/分类/评分/深度解读全部由宿主 agent（它本身就是 LLM）直接完成，不调任何外部 LLM API。
+外加**双档覆盖**（轻档现抓零配置 / 重档连自建后端沉淀历史）与全程**零 API key**——摘要/分类/评分/深度解读全部由宿主 agent（它本身就是 LLM）直接完成，不调任何外部 LLM API。
 
 ## 用法
 
@@ -55,7 +57,10 @@ cp -r ai-radar ~/.claude/skills/ai-radar
 ### Claude Code
 
 ```bash
-# 个人：复制到 skills 目录
+# 一行装：自动复制到 skills 目录 + 清理开发文件
+./install.sh
+
+# 或手动 —— 个人：复制到 skills 目录
 cp -r ai-radar ~/.claude/skills/ai-radar
 
 # 团队：放进项目 .claude/skills/ 共享
@@ -97,7 +102,7 @@ export AI_RADAR_API=http://localhost:8000          # 或你的 VPS 域名
 ## 测试
 
 ```bash
-python3 tests/test_fetch.py      # 抓取器离线解析测试（7/7，零依赖）
+python3 tests/test_fetch.py      # 抓取器离线解析测试（8/8，零依赖）
 ```
 
 工作流级 eval（3 题四件套：正常日报 / 视角切换 / 对抗诱饵）见 [`tests/eval-prompts.md`](tests/eval-prompts.md)。
@@ -109,7 +114,7 @@ ai-radar/
 ├── SKILL.md                  # 触发 + 双模式工作流 + 参数 + 边界与安全
 ├── scripts/
 │   ├── fetch.py              # 自包含抓取器（stdlib 优先，零必装依赖）
-│   └── sources.json          # 26 源清单
+│   └── sources.json          # 32 源清单
 ├── references/
 │   ├── report-format.md      # 金字塔研报模板
 │   ├── lenses.md             # 4 视角加权与解读重点
@@ -119,9 +124,11 @@ ai-radar/
 ├── assets/
 │   └── sample-report.md      # 精简样例
 ├── tests/
-│   ├── test_fetch.py         # 抓取器离线测试（7/7）
+│   ├── test_fetch.py         # 抓取器离线测试（8/8）
 │   └── eval-prompts.md       # 工作流 eval（3 题四件套）
-└── LICENSE                   # MIT
+├── install.sh               # 一行装脚本
+├── demo.tape                # vhs 录制脚本 → demo.gif
+└── LICENSE                  # MIT
 ```
 
 ## License
