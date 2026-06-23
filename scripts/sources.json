@@ -5,6 +5,8 @@
     {"name": "Anthropic News", "category": "vendor", "method": "rss", "url": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml", "enabled": true},
     {"name": "Google DeepMind", "category": "vendor", "method": "rss", "url": "https://deepmind.google/blog/rss.xml", "enabled": true},
     {"name": "Google AI Blog", "category": "vendor", "method": "rss", "url": "https://blog.google/technology/ai/rss/", "enabled": true},
+    {"name": "Google Cloud AI/ML", "category": "vendor", "method": "rss", "url": "https://cloudblog.withgoogle.com/products/ai-machine-learning/rss/", "enabled": true},
+    {"name": "AWS Machine Learning", "category": "vendor", "method": "rss", "url": "https://aws.amazon.com/blogs/machine-learning/feed/", "enabled": true},
     {"name": "Meta AI Blog", "category": "vendor", "method": "rss", "url": "https://ai.meta.com/blog/rss/", "enabled": false},
     {"name": "Microsoft AI", "category": "vendor", "method": "rss", "url": "https://news.microsoft.com/source/topics/ai/feed/", "enabled": true},
     {"name": "HuggingFace Blog", "category": "vendor", "method": "rss", "url": "https://huggingface.co/blog/feed.xml", "enabled": true},
