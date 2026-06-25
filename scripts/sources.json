@@ -12,7 +12,6 @@
     {"name": "HuggingFace Blog", "category": "vendor", "method": "rss", "url": "https://huggingface.co/blog/feed.xml", "enabled": true},
     {"name": "Mistral News", "category": "vendor", "method": "rss", "url": "https://mistral.ai/rss.xml", "enabled": true},
     {"name": "NVIDIA Blog", "category": "vendor", "method": "rss", "url": "https://blogs.nvidia.com/feed/", "enabled": true},
-    {"name": "Qwen (通义) Blog", "category": "vendor", "method": "rss", "url": "https://qwenlm.github.io/blog/index.xml", "enabled": true},
     {"name": "Claude Code Releases", "category": "paradigm", "method": "rss", "url": "https://github.com/anthropics/claude-code/releases.atom", "enabled": true},
     {"name": "Cursor Changelog", "category": "paradigm", "method": "rss", "url": "https://www.cursor.com/changelog/rss.xml", "enabled": true},
     {"name": "GitHub Blog", "category": "paradigm", "method": "rss", "url": "https://github.blog/feed/", "enabled": true},
