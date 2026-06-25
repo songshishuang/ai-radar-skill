@@ -138,7 +138,7 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 ## 资源索引
 
 - `scripts/fetch.py` — 自包含抓取器（RSS/Atom + HN/HF/Reddit/GitHub Trending）
-- `scripts/sources.json` — 36 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub 高星 AI 项目）+ 3 组 X 核心人物动态源（Anthropic/OpenAI/其他大厂，共 12 人）
+- `scripts/sources.json` — 38 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub 高星 AI 项目）+ 3 组 X 核心人物动态源（共 12 人）+ 厂商 blog（OpenAI/Anthropic/Google×3/AWS/MS/HF/Mistral/NVIDIA/**Qwen 通义**等；国内厂商以 Qwen 官方 + HF/HN 间接覆盖为主，定位国外源优先）
 - `references/report-format.md` — 金字塔研报模板与写作要点（生成前必读）
 - `references/lenses.md` — 4 视角的评分权重与解读重点
 - `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引

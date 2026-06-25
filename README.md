@@ -114,7 +114,7 @@ ai-radar/
 ├── SKILL.md                  # 触发 + 双模式工作流 + 参数 + 边界与安全
 ├── scripts/
 │   ├── fetch.py              # 自包含抓取器（stdlib 优先，零必装依赖）
-│   └── sources.json          # 36 源清单
+│   └── sources.json          # 38 源清单
 ├── references/
 │   ├── report-format.md      # 金字塔研报模板
 │   ├── lenses.md             # 4 视角加权与解读重点
