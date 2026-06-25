@@ -42,7 +42,7 @@ _☕ 正文约 N 分钟读完 · 深度解读见文末附录_
 
 ## 🔧 GitHub 高星开源盘点（可选板块）
 
-> 触发：**工程师 / 研究 lens 默认带上**；PM / 投资 lens 当日开源工具有料、或当日新闻偏少时可选补充。数据来自 `github_stars` 源（GitHub Search API 按 stars 降序，多 topic 合并去重）。
+> 触发：**PM / 工程师 / 研究 lens 默认带上**（PM 看产品机会与需求趋势、工程看技术选型与集成、研究看方法新意，详见 `lenses.md`）；投资 lens 当日开源有料时可选。数据来自 `github_stars` 源（GitHub Search API 按 stars 降序，多 topic 合并去重）。
 
 把当下活跃的高星 AI 开源项目，按**产品 × 技术双视角**盘点（3-6 个，挑与当期主线呼应、产品价值清晰的；**对异常虚高 star 保持警惕、剔除明显刷量/无实质项目**，star 标注「GitHub API 实时」）：
 
