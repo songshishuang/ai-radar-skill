@@ -34,7 +34,8 @@
     {"name": "VentureBeat AI", "category": "media", "method": "rss", "url": "https://venturebeat.com/category/ai/feed/", "enabled": true},
     {"name": "Ben's Bites", "category": "media", "method": "rss", "url": "https://bensbites.beehiiv.com/feed", "enabled": false},
     {"name": "Product Hunt", "category": "media", "method": "rss", "url": "https://www.producthunt.com/feed", "enabled": true},
-    {"name": "X: @sama", "category": "social", "method": "dynamic", "query": "Sam Altman OpenAI 最近动态 site:x.com/sama OR site:nitter", "enabled": true},
-    {"name": "X: @karpathy", "category": "social", "method": "dynamic", "query": "Andrej Karpathy 最近推文动态", "enabled": true}
+    {"name": "X: Anthropic 核心人物", "category": "social", "method": "dynamic", "query": "Anthropic 核心人物最近 X/Twitter 重要动态·产品观点·行业表态：Cat Wu(@_catwu·Head of Product Claude Code) / Dario Amodei(CEO) / Alex Albert(DevRel) / Boris Cherny(Claude Code 创建者) / Jan Leike(Alignment) / Amanda Askell(Claude 性格设计)", "enabled": true},
+    {"name": "X: OpenAI 核心人物", "category": "social", "method": "dynamic", "query": "OpenAI 核心人物最近 X/Twitter 动态：Sam Altman(@sama·CEO) / Greg Brockman(总裁)", "enabled": true},
+    {"name": "X: 其他大厂核心人物", "category": "social", "method": "dynamic", "query": "AI 大厂核心人物最近 X/Twitter 动态：Andrej Karpathy(@karpathy) / Demis Hassabis(Google DeepMind CEO) / Yann LeCun(Meta 首席 AI 科学家) / Arthur Mensch(Mistral CEO)", "enabled": true}
   ]
 }

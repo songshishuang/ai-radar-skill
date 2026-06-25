@@ -82,7 +82,7 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 
 ### 2. 补抓动态源（你的工具）
 
-对 `dynamic_sources` 里的每一项（X/Twitter 等无 RSS 的源），用 **WebSearch** 按其 `query` 搜最近动态，挑出真有信息量的 1-3 条，补进条目池。抓不到就跳过——绝不编造。
+对 `dynamic_sources` 里的每一项（**X 核心人物组**、MCP Marketplace 等无 RSS 的源），用 **WebSearch** 按其 `query` 搜最近动态，挑出真有信息量的 1-3 条，补进条目池。**这是日报的固定输入、不是可选项** ⚠️——X 上核心人物（如 Anthropic 的 Cat Wu `@_catwu` / Dario Amodei、OpenAI 的 Sam Altman 等）的产品观点与行业表态，是 ai-radar 区别于纯 RSS 聚合的独特信号，最容易因「嫌麻烦」被跳过，**务必每期都补**。某人/某组本期无重要动态就如实跳过、并在尾注标「本期 X 无重要动态」——绝不编造、也不假装搜过。
 
 **信源置信度护栏**：WebSearch 回来的常混杂权威源（官方、知名作者）与二手聚合站（不知名 AI 资讯站、加密媒体转载）。**仅见于二手聚合站、无法回溯到一手来源的内容，至多进「值得关注」并标注「来源存疑」，不得进必读、不得作为深度分析依据**。重要度宁可压低也不要被未经证实的传闻拔高——一条假必读比漏一条真新闻伤害更大。
 
@@ -138,7 +138,7 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 ## 资源索引
 
 - `scripts/fetch.py` — 自包含抓取器（RSS/Atom + HN/HF/Reddit/GitHub Trending）
-- `scripts/sources.json` — 35 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub 高星 AI 项目，供 report-format 的「GitHub 高星开源盘点」板块）
+- `scripts/sources.json` — 36 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub 高星 AI 项目）+ 3 组 X 核心人物动态源（Anthropic/OpenAI/其他大厂，共 12 人）
 - `references/report-format.md` — 金字塔研报模板与写作要点（生成前必读）
 - `references/lenses.md` — 4 视角的评分权重与解读重点
 - `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引
