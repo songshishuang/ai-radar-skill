@@ -105,7 +105,7 @@ export AI_RADAR_API=http://localhost:8000          # 或你的 VPS 域名
 python3 tests/test_fetch.py      # 抓取器离线解析测试（8/8，零依赖）
 ```
 
-工作流级 eval（3 题四件套：正常日报 / 视角切换 / 对抗诱饵）见 [`tests/eval-prompts.md`](tests/eval-prompts.md)。
+工作流级 eval（4 题四件套：正常日报 / 视角切换 / 对抗诱饵 / 合规审核）见 [`tests/eval-prompts.md`](tests/eval-prompts.md)。
 
 ## 结构
 
@@ -118,14 +118,16 @@ ai-radar/
 ├── references/
 │   ├── report-format.md      # 金字塔研报模板
 │   ├── lenses.md             # 4 视角加权与解读重点
-│   └── deploy.md             # 连接模式契约 + 自托管指引
+│   ├── deploy.md             # 连接模式契约 + 自托管指引
+│   ├── compliance.md         # 内容合规审核清单（输出前必做）
+│   └── jdme-card.md          # 日报→京ME 卡片推送格式
 ├── samples/
 │   └── daily-sample.md       # 真实产出样本（59 条 + 5 深度头条）
 ├── assets/
 │   └── sample-report.md      # 精简样例
 ├── tests/
 │   ├── test_fetch.py         # 抓取器离线测试（8/8）
-│   └── eval-prompts.md       # 工作流 eval（3 题四件套）
+│   └── eval-prompts.md       # 工作流 eval（4 题四件套）
 ├── install.sh               # 一行装脚本
 ├── demo.tape                # vhs 录制脚本 → demo.gif
 └── LICENSE                  # MIT

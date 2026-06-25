@@ -112,7 +112,11 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 ## 📚 附录·深度解读   —— 必读条目的六段全文，沉底，想深入再看
 ```
 
-### 5. 输出
+### 5. 合规审核（输出前必做）
+
+日报要**上公网站 + 推送内部 IM**、给同事看——呈现 / 落盘 / 分发**之前**必须过一轮合规审核（清单见 [`references/compliance.md`](references/compliance.md)）。重点核：**① 政治 / 地缘表述中立**（中美竞争 / 出口管制 / 监管 / 制裁类只客观陈述事实、不带立场、不渲染对立——AI 情报里最高频）② 不传未证实信息 ③ 导向正面、不渲染威胁论 / 失业恐慌 ④ 企业负面用「事实 + 来源」非主观贬低 ⑤ 人物动态只用公开信息。命中条目**改写中立化或降级 / 移除**——**合规优先于完整，宁可少一条不留风险**。通过后可在尾注标「· 已过合规审核」。
+
+### 6. 输出
 
 - 在对话里完整呈现研报。
 - 默认落盘：`./ai-radar-reports/{range}-{period}.md`（便于用户归档/喂给其它工具）。
@@ -144,7 +148,8 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 - `references/report-format.md` — 金字塔研报模板与写作要点（生成前必读）
 - `references/lenses.md` — 4 视角的评分权重与解读重点
 - `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引
+- `references/compliance.md` — 内容合规审核清单（输出前必做：政治地缘中立 / 不传谣 / 导向正面 / 来源合规等）
 - `references/jdme-card.md` — 日报 → 京ME 卡片推送格式（配合 `jdme-push` skill；其它 IM 类推）
 - `assets/sample-report.md` — 一份样例输出
 - `samples/daily-sample.md` — 真实产出样本（59 条 + 5 深度头条，看一眼产物长什么样）
-- `tests/test_fetch.py` — 抓取器离线测试（8/8 绿）；`tests/eval-prompts.md` — 工作流 eval（3 题四件套）
+- `tests/test_fetch.py` — 抓取器离线测试（8/8 绿）；`tests/eval-prompts.md` — 工作流 eval（4 题四件套：正常日报/视角切换/对抗诱饵/合规审核）
