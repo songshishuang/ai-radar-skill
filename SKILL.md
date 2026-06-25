@@ -138,7 +138,7 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 ## 资源索引
 
 - `scripts/fetch.py` — 自包含抓取器（RSS/Atom + HN/HF/Reddit/GitHub Trending）
-- `scripts/sources.json` — 34 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）
+- `scripts/sources.json` — 35 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub 高星 AI 项目，供 report-format 的「GitHub 高星开源盘点」板块）
 - `references/report-format.md` — 金字塔研报模板与写作要点（生成前必读）
 - `references/lenses.md` — 4 视角的评分权重与解读重点
 - `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引

@@ -341,6 +341,48 @@ def fetch_github_trending(src: dict, cutoff_ts: float) -> list:
     return out
 
 
+def fetch_github_stars(src: dict, cutoff_ts: float) -> list:
+    """GitHub Search API：近期活跃的高星 AI 开源项目（按 stars 降序），供「GitHub 高星盘点」板块。
+
+    GitHub repository search 不支持 qualifier（topic:/stars:/pushed:）之间的 OR，
+    故把多个 topic 逐个查询后合并去重，再按 stars 排序取 top。
+    """
+    since_date = time.strftime("%Y-%m-%d", time.gmtime(cutoff_ts))
+    queries = src.get("query", ["topic:llm", "topic:ai-agents", "topic:generative-ai"])
+    if isinstance(queries, str):
+        queries = [queries]
+    min_stars = src.get("min_stars", 5000)
+    limit = src.get("limit", 12)
+    seen, out = set(), []
+    for query in queries:
+        q = f"{query} stars:>{min_stars} pushed:>{since_date}".replace(" ", "+")
+        url = f"https://api.github.com/search/repositories?q={q}&sort=stars&order=desc&per_page={limit}"
+        try:
+            items = http_get_json(url).get("items", [])
+        except (URLError, Exception):  # noqa: B014 — 单 query 失败不拖累其余 topic
+            continue
+        for r in items:
+            name = r.get("full_name", "")
+            if not name or name in seen:
+                continue
+            seen.add(name)
+            stars = r.get("stargazers_count", 0)
+            lang = r.get("language") or ""
+            out.append(
+                {
+                    "title": f"{name} (⭐{stars // 1000}k{' ' + lang if lang else ''})",
+                    "url": r.get("html_url", ""),
+                    "source": src["name"],
+                    "category": src["category"],
+                    "published_at": r.get("pushed_at"),
+                    "summary_raw": (r.get("description") or "")[:200],
+                    "extra": {"stars": stars, "language": lang},
+                }
+            )
+    out.sort(key=lambda x: -x["extra"]["stars"])
+    return out[:limit]
+
+
 FETCHERS = {
     "rss": fetch_rss,
     "hackernews": fetch_hackernews,
@@ -349,6 +391,7 @@ FETCHERS = {
     "hf_spaces": fetch_hf_spaces,
     "reddit": fetch_reddit,
     "github_trending": fetch_github_trending,
+    "github_stars": fetch_github_stars,
 }
 
 
