@@ -117,6 +117,7 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 - 在对话里完整呈现研报。
 - 默认落盘：`./ai-radar-reports/{range}-{period}.md`（便于用户归档/喂给其它工具）。
   **落盘统一用 shell 写文件**（`cat > 文件 <<'EOF' … EOF` 或等价方式），不要依赖 `Write` 工具——在子代理/受限场景下 `Write` 可能被拦截，shell 写文件则到处都能用。
+- **分发到京ME（可选）**：用户要把日报推到京ME 时，按 [`references/jdme-card.md`](references/jdme-card.md) 的卡片格式（标题 / 红色主题 / 正文**每条挂超链接** / 「看完整日报」按钮 / 精简扫读版）压成 `params.json`，调 **`jdme-push`** skill 发送（它管凭证 / 内网 / 预览确认 / 回报终态）。**收件人由用户当场指定，绝不脑补**；其它 IM（企微 / 飞书 / 钉钉）同理类推。
 
 ---
 
@@ -143,6 +144,7 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 - `references/report-format.md` — 金字塔研报模板与写作要点（生成前必读）
 - `references/lenses.md` — 4 视角的评分权重与解读重点
 - `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引
+- `references/jdme-card.md` — 日报 → 京ME 卡片推送格式（配合 `jdme-push` skill；其它 IM 类推）
 - `assets/sample-report.md` — 一份样例输出
 - `samples/daily-sample.md` — 真实产出样本（59 条 + 5 深度头条，看一眼产物长什么样）
 - `tests/test_fetch.py` — 抓取器离线测试（8/8 绿）；`tests/eval-prompts.md` — 工作流 eval（3 题四件套）
