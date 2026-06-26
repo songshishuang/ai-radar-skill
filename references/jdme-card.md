@@ -8,6 +8,7 @@
 
 | 字段 | 固定值 / 规则 |
 |---|---|
+| `summary` | **列表预览文字**（京ME 会话列表 / 通知栏显示的那一行）：`📡 AI 情报日报 {M-D}｜{头条一句核心} 等 N 条`。**必传**——不传则 jdme-push 回退用正文首行、列表会显示「⚡ 速览…」不够醒目（实测 2026-06-26 踩过）|
 | `title` | `📡 AI 情报日报 · {YYYY-MM-DD}`（周报 `📡 AI 情报周报 · {YYYY-Www}`，月报类推）|
 | `subtitle` | `{lens 中文}视角 · ai-radar`（pm→PM / engineer→工程 / investor→投资 / researcher→研究）|
 | `theme` | `red`（日报醒目）；周报 `blue`、月报 `purple` |
