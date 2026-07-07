@@ -117,10 +117,11 @@ def test_format_stars():
     assert fetch._format_stars(1530) == "1.5k"
 
 
-def test_github_stars_uses_recent_created_window():
+def test_github_stars_daily_uses_recent_created_window():
     from datetime import datetime, timezone
 
     calls = []
+    fake_now = datetime(2026, 6, 12, tzinfo=timezone.utc).timestamp()
 
     def fake_http_get_json(url):
         calls.append(url)
@@ -160,17 +161,15 @@ def test_github_stars_uses_recent_created_window():
     old_time = fetch.time.time
     try:
         fetch.http_get_json = fake_http_get_json
-        fetch.time.time = lambda: datetime(2026, 6, 12, tzinfo=timezone.utc).timestamp()
+        fetch.time.time = lambda: fake_now
         out = fetch.fetch_github_stars(
             {
-                "name": "GitHub 近7天高星 AI 新项目",
+                "name": "GitHub AI 项目雷达",
                 "category": "community",
                 "query": ["topic:ai-agents"],
-                "lookback_days": 7,
-                "min_stars": 50,
-                "limit": 10,
+                "periods": {"daily": {"lookback_days": 7, "min_stars": 50, "limit": 10}},
             },
-            cutoff_ts=0,
+            cutoff_ts=fake_now - fetch.parse_since("36h"),
         )
     finally:
         fetch.http_get_json = old_http_get_json
@@ -180,6 +179,131 @@ def test_github_stars_uses_recent_created_window():
     assert "pushed:>" not in calls[0]
     assert [i["url"] for i in out] == ["https://github.com/new/agent-kit"]
     assert out[0]["published_at"] == "2026-06-10T00:00:00Z"
+    assert out[0]["extra"]["github_period"] == "daily"
+
+
+def test_github_stars_weekly_uses_30_day_momentum_window():
+    from datetime import datetime, timezone
+
+    calls = []
+    fake_now = datetime(2026, 6, 12, tzinfo=timezone.utc).timestamp()
+
+    def fake_http_get_json(url):
+        calls.append(url)
+        return {
+            "items": [
+                {
+                    "full_name": "month/agent-kit",
+                    "html_url": "https://github.com/month/agent-kit",
+                    "stargazers_count": 880,
+                    "language": "TypeScript",
+                    "description": "AI agent workflow toolkit",
+                    "created_at": "2026-05-20T00:00:00Z",
+                    "pushed_at": "2026-06-11T00:00:00Z",
+                },
+                {
+                    "full_name": "older/agent-kit",
+                    "html_url": "https://github.com/older/agent-kit",
+                    "stargazers_count": 99000,
+                    "language": "Python",
+                    "description": "AI agent toolkit created too early",
+                    "created_at": "2026-04-01T00:00:00Z",
+                    "pushed_at": "2026-06-11T00:00:00Z",
+                },
+            ]
+        }
+
+    old_http_get_json = fetch.http_get_json
+    old_time = fetch.time.time
+    try:
+        fetch.http_get_json = fake_http_get_json
+        fetch.time.time = lambda: fake_now
+        out = fetch.fetch_github_stars(
+            {
+                "name": "GitHub AI 项目雷达",
+                "category": "community",
+                "query": ["topic:ai-agents"],
+                "periods": {"weekly": {"lookback_days": 30, "min_stars": 100, "limit": 10}},
+            },
+            cutoff_ts=fake_now - fetch.parse_since("7d"),
+        )
+    finally:
+        fetch.http_get_json = old_http_get_json
+        fetch.time.time = old_time
+
+    assert calls and "created:>2026-05-13" in calls[0]
+    assert "stars:>100" in calls[0]
+    assert "pushed:>" not in calls[0]
+    assert [i["url"] for i in out] == ["https://github.com/month/agent-kit"]
+    assert out[0]["extra"]["github_period"] == "weekly"
+    assert out[0]["summary_raw"].startswith("周报·近30天动量项目")
+
+
+def test_github_stars_monthly_uses_foundation_active_window():
+    from datetime import datetime, timezone
+
+    calls = []
+    fake_now = datetime(2026, 6, 12, tzinfo=timezone.utc).timestamp()
+
+    def fake_http_get_json(url):
+        calls.append(url)
+        return {
+            "items": [
+                {
+                    "full_name": "foundation/langchain-ai",
+                    "html_url": "https://github.com/foundation/langchain-ai",
+                    "stargazers_count": 92000,
+                    "language": "Python",
+                    "description": "LLM application framework for agents",
+                    "created_at": "2020-01-01T00:00:00Z",
+                    "pushed_at": "2026-06-01T00:00:00Z",
+                },
+                {
+                    "full_name": "stale/agent-kit",
+                    "html_url": "https://github.com/stale/agent-kit",
+                    "stargazers_count": 50000,
+                    "language": "Python",
+                    "description": "AI agent toolkit no longer active",
+                    "created_at": "2020-01-01T00:00:00Z",
+                    "pushed_at": "2025-01-01T00:00:00Z",
+                },
+                {
+                    "full_name": "foundation/plain-db",
+                    "html_url": "https://github.com/foundation/plain-db",
+                    "stargazers_count": 100000,
+                    "language": "Go",
+                    "description": "database engine",
+                    "created_at": "2018-01-01T00:00:00Z",
+                    "pushed_at": "2026-06-01T00:00:00Z",
+                },
+            ]
+        }
+
+    old_http_get_json = fetch.http_get_json
+    old_time = fetch.time.time
+    try:
+        fetch.http_get_json = fake_http_get_json
+        fetch.time.time = lambda: fake_now
+        out = fetch.fetch_github_stars(
+            {
+                "name": "GitHub AI 项目雷达",
+                "category": "community",
+                "query": ["topic:llm"],
+                "periods": {"monthly": {"active_days": 180, "min_stars": 5000, "limit": 10}},
+            },
+            cutoff_ts=fake_now - fetch.parse_since("30d"),
+        )
+    finally:
+        fetch.http_get_json = old_http_get_json
+        fetch.time.time = old_time
+
+    assert calls and "pushed:>2025-12-14" in calls[0]
+    assert "stars:>5000" in calls[0]
+    assert "created:>" not in calls[0]
+    assert [i["url"] for i in out] == ["https://github.com/foundation/langchain-ai"]
+    assert out[0]["published_at"] == "2026-06-01T00:00:00Z"
+    assert out[0]["extra"]["github_period"] == "monthly"
+    assert out[0]["extra"]["freshness"] == "pushed"
 
 
 # ── 零依赖 runner ──

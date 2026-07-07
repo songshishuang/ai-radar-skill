@@ -327,13 +327,88 @@ class _TrendingParser(HTMLParser):
             self._href = ""
 
 
-_AI_RE = re.compile(r"\b(ai|llm|gpt|claude|gemini|agent|agentic|rag|diffusion|transformer|model|mcp|copilot|inference|neural)\b", re.I)
+_AI_RE = re.compile(
+    r"\b(ai|llms?|gpts?|claude|gemini|agents?|agentic|rag|diffusion|transformers?|models?|mcp|copilot|inference|neural|llama|prompt|embedding|vector|langchain|autogen)\b",
+    re.I,
+)
 
 
 def _format_stars(stars: int) -> str:
     if stars >= 1000:
         return f"{stars / 1000:.1f}k".replace(".0k", "k")
     return str(stars)
+
+
+def _as_list(value, default: list[str]) -> list[str]:
+    if value is None:
+        return default
+    if isinstance(value, str):
+        return [value]
+    return list(value)
+
+
+def _github_stars_profile(src: dict, cutoff_ts: float) -> dict:
+    """根据报告时间窗切换 GitHub 项目追踪口径。
+
+    GitHub Search API 不提供「近 N 天新增 star」字段，所以：
+    - 日报：看近 7 天创建的新项目，抓早期爆发；
+    - 周报：看近 30 天创建且已积累高星的项目，作为增长动量代理；
+    - 月报：看高星且近期仍活跃的基础设施项目，用于生态格局判断。
+    """
+    now = time.time()
+    report_window_days = max(1, round((now - cutoff_ts) / 86400)) if cutoff_ts > 0 else 1
+    periods = src.get("periods") or {}
+    default_queries = _as_list(src.get("query"), ["topic:llm", "topic:ai-agents", "topic:generative-ai"])
+
+    if report_window_days <= 2:
+        period, defaults = (
+            "daily",
+            {
+                "label": "日报·近7天新项目",
+                "strategy": "new",
+                "freshness": "created",
+                "lookback_days": int(src.get("lookback_days", 7)),
+                "min_stars": int(src.get("min_stars", 50)),
+            },
+        )
+    elif report_window_days <= 10:
+        period, defaults = (
+            "weekly",
+            {
+                "label": "周报·近30天动量项目",
+                "strategy": "momentum",
+                "freshness": "created",
+                "lookback_days": int(src.get("weekly_lookback_days", 30)),
+                "min_stars": int(src.get("weekly_min_stars", 100)),
+            },
+        )
+    else:
+        period, defaults = (
+            "monthly",
+            {
+                "label": "月报·基础设施活跃项目",
+                "strategy": "foundation",
+                "freshness": "pushed",
+                "lookback_days": int(src.get("monthly_active_days", 180)),
+                "min_stars": int(src.get("monthly_min_stars", 5000)),
+            },
+        )
+
+    cfg = periods.get(period, {})
+    lookback_days = int(cfg.get("active_days", cfg.get("lookback_days", defaults["lookback_days"])))
+    fresh_cutoff_ts = now - lookback_days * 86400
+    return {
+        "period": period,
+        "window_days": report_window_days,
+        "label": cfg.get("label", defaults["label"]),
+        "strategy": cfg.get("strategy", defaults["strategy"]),
+        "freshness": cfg.get("freshness", defaults["freshness"]),
+        "lookback_days": lookback_days,
+        "min_stars": int(cfg.get("min_stars", defaults["min_stars"])),
+        "limit": int(cfg.get("limit", src.get("limit", 12))),
+        "query": _as_list(cfg.get("query"), default_queries),
+        "fresh_cutoff_ts": fresh_cutoff_ts,
+    }
 
 
 def fetch_github_trending(src: dict, cutoff_ts: float) -> list:
@@ -357,24 +432,21 @@ def fetch_github_trending(src: dict, cutoff_ts: float) -> list:
 
 
 def fetch_github_stars(src: dict, cutoff_ts: float) -> list:
-    """GitHub Search API：近 7 天新出现的高星 AI 开源项目，供「GitHub 高星盘点」板块。
+    """GitHub Search API：按日报/周报/月报切换 GitHub 项目追踪口径。
 
     GitHub repository search 不支持 qualifier（topic:/stars:/pushed:）之间的 OR，
-    也不暴露「近 7 天新增 stars」排序，故用 created:>N 天作为新鲜度约束，
-    把多个 topic/关键词逐个查询后合并去重，再按当前 stars 排序取 top。
+    也不暴露「近 N 天新增 stars」排序，故用时间窗代理：日报/周报约束
+    created:>N 天，月报约束 pushed:>N 天，把多个 topic/关键词逐个查询后
+    合并去重，再按当前 stars 排序取 top。
     """
-    lookback_days = int(src.get("lookback_days", 7))
-    recent_cutoff_ts = time.time() - lookback_days * 86400
-    since_date = time.strftime("%Y-%m-%d", time.gmtime(recent_cutoff_ts))
-    queries = src.get("query", ["topic:llm", "topic:ai-agents", "topic:generative-ai"])
-    if isinstance(queries, str):
-        queries = [queries]
-    min_stars = src.get("min_stars", 50)
-    limit = src.get("limit", 12)
+    profile = _github_stars_profile(src, cutoff_ts)
+    since_date = time.strftime("%Y-%m-%d", time.gmtime(profile["fresh_cutoff_ts"]))
+    freshness = "pushed" if profile["freshness"] == "pushed" else "created"
+    timestamp_key = f"{freshness}_at"
     seen, out = set(), []
-    for query in queries:
-        q = f"{query} stars:>{min_stars} created:>{since_date}".replace(" ", "+")
-        url = f"https://api.github.com/search/repositories?q={q}&sort=stars&order=desc&per_page={limit}"
+    for query in profile["query"]:
+        q = f"{query} stars:>{profile['min_stars']} {freshness}:>{since_date}".replace(" ", "+")
+        url = f"https://api.github.com/search/repositories?q={q}&sort=stars&order=desc&per_page={profile['limit']}"
         try:
             items = http_get_json(url).get("items", [])
         except (URLError, Exception):  # noqa: B014 — 单 query 失败不拖累其余 topic
@@ -387,32 +459,38 @@ def fetch_github_stars(src: dict, cutoff_ts: float) -> list:
             topics = " ".join(r.get("topics") or [])
             if not _AI_RE.search(f"{name} {description} {topics}"):
                 continue
-            created_ts = _iso_to_ts(r.get("created_at"))
-            if created_ts and created_ts < recent_cutoff_ts:
+            fresh_ts = _iso_to_ts(r.get(timestamp_key))
+            if fresh_ts and fresh_ts < profile["fresh_cutoff_ts"]:
                 continue
             seen.add(name)
             stars = r.get("stargazers_count", 0)
             lang = r.get("language") or ""
             created_at = r.get("created_at")
+            pushed_at = r.get("pushed_at")
+            published_at = created_at if freshness == "created" else (pushed_at or r.get("updated_at") or created_at)
             out.append(
                 {
                     "title": f"{name} (⭐{_format_stars(stars)}{' ' + lang if lang else ''})",
                     "url": r.get("html_url", ""),
                     "source": src["name"],
                     "category": src["category"],
-                    "published_at": created_at,
-                    "summary_raw": f"近 {lookback_days} 天新项目; stars={stars}; {description[:180]}",
+                    "published_at": published_at,
+                    "summary_raw": f"{profile['label']}; stars={stars}; {description[:180]}",
                     "extra": {
                         "stars": stars,
                         "language": lang,
                         "created_at": created_at,
-                        "pushed_at": r.get("pushed_at"),
-                        "lookback_days": lookback_days,
+                        "pushed_at": pushed_at,
+                        "lookback_days": profile["lookback_days"],
+                        "min_stars": profile["min_stars"],
+                        "github_period": profile["period"],
+                        "github_strategy": profile["strategy"],
+                        "freshness": freshness,
                     },
                 }
             )
     out.sort(key=lambda x: -x["extra"]["stars"])
-    return out[:limit]
+    return out[: profile["limit"]]
 
 
 FETCHERS = {

@@ -143,8 +143,8 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 
 ## 资源索引
 
-- `scripts/fetch.py` — 自包含抓取器（RSS/Atom + HN/HF/Reddit/GitHub Trending）
-- `scripts/sources.json` — 37 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub 近 7 天高星 AI 新项目，按创建时间约束后再按 stars 排序）+ 3 组 X 核心人物动态源（共 12 人）+ 厂商 blog（OpenAI/Anthropic/Google×3/AWS/MS/HF/Mistral/NVIDIA 等）。国内厂商（智谱/DeepSeek/Qwen/Moonshot 等）**无有效活跃官方英文 RSS**，靠 HF blog（其 org 发文）+ HN + 媒体间接覆盖（GLM/DeepSeek/Qwen 动态实测均能抓到）；ai-radar 定位国外源优先
+- `scripts/fetch.py` — 自包含抓取器（RSS/Atom + HN/HF/Reddit/GitHub Trending/GitHub Search）
+- `scripts/sources.json` — 37 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub AI 项目雷达：日报=近 7 天新项目，周报=近 30 天动量项目，月报=高星且近 180 天活跃的基础设施项目；GitHub API 不提供真实 star 增量，周报用「短期创建 + 当前高星」做代理）+ 3 组 X 核心人物动态源（共 12 人）+ 厂商 blog（OpenAI/Anthropic/Google×3/AWS/MS/HF/Mistral/NVIDIA 等）。国内厂商（智谱/DeepSeek/Qwen/Moonshot 等）**无有效活跃官方英文 RSS**，靠 HF blog（其 org 发文）+ HN + 媒体间接覆盖（GLM/DeepSeek/Qwen 动态实测均能抓到）；ai-radar 定位国外源优先
 - `references/report-format.md` — 金字塔研报模板与写作要点（生成前必读）
 - `references/lenses.md` — 4 视角的评分权重与解读重点
 - `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引
@@ -152,4 +152,4 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 - `references/jdme-card.md` — 日报 → 京ME 卡片推送格式（配合 `jdme-push` skill；其它 IM 类推）
 - `assets/sample-report.md` — 一份样例输出
 - `samples/daily-sample.md` — 真实产出样本（59 条 + 5 深度头条，看一眼产物长什么样）
-- `tests/test_fetch.py` — 抓取器离线测试（8/8 绿）；`tests/eval-prompts.md` — 工作流 eval（4 题四件套：正常日报/视角切换/对抗诱饵/合规审核）
+- `tests/test_fetch.py` — 抓取器离线测试（覆盖 RSS/Atom、动态源路由、HF Spaces、GitHub 周期策略等）；`tests/eval-prompts.md` — 工作流 eval（4 题四件套：正常日报/视角切换/对抗诱饵/合规审核）
