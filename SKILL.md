@@ -144,7 +144,7 @@ python ai-radar/scripts/fetch.py --since 30d          # monthly
 ## 资源索引
 
 - `scripts/fetch.py` — 自包含抓取器（RSS/Atom + HN/HF/Reddit/GitHub Trending）
-- `scripts/sources.json` — 37 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub 高星 AI 项目）+ 3 组 X 核心人物动态源（共 12 人）+ 厂商 blog（OpenAI/Anthropic/Google×3/AWS/MS/HF/Mistral/NVIDIA 等）。国内厂商（智谱/DeepSeek/Qwen/Moonshot 等）**无有效活跃官方英文 RSS**，靠 HF blog（其 org 发文）+ HN + 媒体间接覆盖（GLM/DeepSeek/Qwen 动态实测均能抓到）；ai-radar 定位国外源优先
+- `scripts/sources.json` — 37 源清单，可增删（`enabled:false` 禁用，`method:dynamic` 交给你补抓）；含 `github_stars` 源（GitHub 近 7 天高星 AI 新项目，按创建时间约束后再按 stars 排序）+ 3 组 X 核心人物动态源（共 12 人）+ 厂商 blog（OpenAI/Anthropic/Google×3/AWS/MS/HF/Mistral/NVIDIA 等）。国内厂商（智谱/DeepSeek/Qwen/Moonshot 等）**无有效活跃官方英文 RSS**，靠 HF blog（其 org 发文）+ HN + 媒体间接覆盖（GLM/DeepSeek/Qwen 动态实测均能抓到）；ai-radar 定位国外源优先
 - `references/report-format.md` — 金字塔研报模板与写作要点（生成前必读）
 - `references/lenses.md` — 4 视角的评分权重与解读重点
 - `references/deploy.md` — 连接模式接口契约 + 自托管完整版（邮件/RSS/网站）指引

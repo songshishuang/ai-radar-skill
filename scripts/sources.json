@@ -19,7 +19,7 @@
     {"name": "LangChain Blog", "category": "paradigm", "method": "rss", "url": "https://blog.langchain.dev/rss/", "enabled": true},
     {"name": "Hacker News AI", "category": "community", "method": "hackernews", "url": "https://hn.algolia.com/api/v1/search_by_date", "enabled": true},
     {"name": "GitHub Trending", "category": "community", "method": "github_trending", "url": "https://github.com/trending?since=daily", "enabled": true},
-    {"name": "GitHub 高星 AI 项目", "category": "community", "method": "github_stars", "query": ["topic:llm", "topic:ai-agents", "topic:generative-ai", "topic:rag"], "min_stars": 5000, "limit": 12, "enabled": true},
+    {"name": "GitHub 近7天高星 AI 新项目", "category": "community", "method": "github_stars", "query": ["topic:llm", "topic:ai-agents", "topic:generative-ai", "topic:rag", "topic:mcp", "llm in:name,description,readme", "claude in:name,description,readme", "mcp in:name,description,readme", "rag in:name,description,readme", "coding-agent in:name,description,readme"], "lookback_days": 7, "min_stars": 50, "limit": 12, "enabled": true},
     {"name": "HF Daily Papers", "category": "community", "method": "hf_papers", "url": "https://huggingface.co/api/daily_papers", "enabled": true},
     {"name": "HF Trending Models", "category": "community", "method": "hf_models", "url": "https://huggingface.co/api/models", "enabled": true},
     {"name": "r/LocalLLaMA", "category": "community", "method": "reddit", "url": "https://www.reddit.com/r/LocalLLaMA/top.json?t=day&limit=25", "enabled": false},

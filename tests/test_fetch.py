@@ -111,6 +111,77 @@ def test_hf_spaces_registered():
     assert "hf_spaces" in fetch.FETCHERS
 
 
+def test_format_stars():
+    assert fetch._format_stars(999) == "999"
+    assert fetch._format_stars(1000) == "1k"
+    assert fetch._format_stars(1530) == "1.5k"
+
+
+def test_github_stars_uses_recent_created_window():
+    from datetime import datetime, timezone
+
+    calls = []
+
+    def fake_http_get_json(url):
+        calls.append(url)
+        return {
+            "items": [
+                {
+                    "full_name": "new/agent-kit",
+                    "html_url": "https://github.com/new/agent-kit",
+                    "stargazers_count": 420,
+                    "language": "Python",
+                    "description": "Fresh AI agent toolkit",
+                    "created_at": "2026-06-10T00:00:00Z",
+                    "pushed_at": "2026-06-11T00:00:00Z",
+                },
+                {
+                    "full_name": "old/agent-kit",
+                    "html_url": "https://github.com/old/agent-kit",
+                    "stargazers_count": 99000,
+                    "language": "Python",
+                    "description": "Old but recently pushed",
+                    "created_at": "2020-01-01T00:00:00Z",
+                    "pushed_at": "2026-06-11T00:00:00Z",
+                },
+                {
+                    "full_name": "new/plain-tool",
+                    "html_url": "https://github.com/new/plain-tool",
+                    "stargazers_count": 9999,
+                    "language": "Go",
+                    "description": "Fresh but unrelated tool",
+                    "created_at": "2026-06-10T00:00:00Z",
+                    "pushed_at": "2026-06-11T00:00:00Z",
+                },
+            ]
+        }
+
+    old_http_get_json = fetch.http_get_json
+    old_time = fetch.time.time
+    try:
+        fetch.http_get_json = fake_http_get_json
+        fetch.time.time = lambda: datetime(2026, 6, 12, tzinfo=timezone.utc).timestamp()
+        out = fetch.fetch_github_stars(
+            {
+                "name": "GitHub 近7天高星 AI 新项目",
+                "category": "community",
+                "query": ["topic:ai-agents"],
+                "lookback_days": 7,
+                "min_stars": 50,
+                "limit": 10,
+            },
+            cutoff_ts=0,
+        )
+    finally:
+        fetch.http_get_json = old_http_get_json
+        fetch.time.time = old_time
+
+    assert calls and "created:>2026-06-05" in calls[0]
+    assert "pushed:>" not in calls[0]
+    assert [i["url"] for i in out] == ["https://github.com/new/agent-kit"]
+    assert out[0]["published_at"] == "2026-06-10T00:00:00Z"
+
+
 # ── 零依赖 runner ──
 def _main():
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]

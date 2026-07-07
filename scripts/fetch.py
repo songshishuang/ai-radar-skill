@@ -154,6 +154,15 @@ def _within(iso: str | None, cutoff_ts: float) -> bool:
         return True
 
 
+def _iso_to_ts(iso: str | None) -> float | None:
+    if not iso:
+        return None
+    try:
+        return datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return None
+
+
 # ── 各 method 抓取 ──
 
 
@@ -321,6 +330,12 @@ class _TrendingParser(HTMLParser):
 _AI_RE = re.compile(r"\b(ai|llm|gpt|claude|gemini|agent|agentic|rag|diffusion|transformer|model|mcp|copilot|inference|neural)\b", re.I)
 
 
+def _format_stars(stars: int) -> str:
+    if stars >= 1000:
+        return f"{stars / 1000:.1f}k".replace(".0k", "k")
+    return str(stars)
+
+
 def fetch_github_trending(src: dict, cutoff_ts: float) -> list:
     p = _TrendingParser()
     p.feed(http_get(src["url"]))
@@ -342,20 +357,23 @@ def fetch_github_trending(src: dict, cutoff_ts: float) -> list:
 
 
 def fetch_github_stars(src: dict, cutoff_ts: float) -> list:
-    """GitHub Search API：近期活跃的高星 AI 开源项目（按 stars 降序），供「GitHub 高星盘点」板块。
+    """GitHub Search API：近 7 天新出现的高星 AI 开源项目，供「GitHub 高星盘点」板块。
 
     GitHub repository search 不支持 qualifier（topic:/stars:/pushed:）之间的 OR，
-    故把多个 topic 逐个查询后合并去重，再按 stars 排序取 top。
+    也不暴露「近 7 天新增 stars」排序，故用 created:>N 天作为新鲜度约束，
+    把多个 topic/关键词逐个查询后合并去重，再按当前 stars 排序取 top。
     """
-    since_date = time.strftime("%Y-%m-%d", time.gmtime(cutoff_ts))
+    lookback_days = int(src.get("lookback_days", 7))
+    recent_cutoff_ts = time.time() - lookback_days * 86400
+    since_date = time.strftime("%Y-%m-%d", time.gmtime(recent_cutoff_ts))
     queries = src.get("query", ["topic:llm", "topic:ai-agents", "topic:generative-ai"])
     if isinstance(queries, str):
         queries = [queries]
-    min_stars = src.get("min_stars", 5000)
+    min_stars = src.get("min_stars", 50)
     limit = src.get("limit", 12)
     seen, out = set(), []
     for query in queries:
-        q = f"{query} stars:>{min_stars} pushed:>{since_date}".replace(" ", "+")
+        q = f"{query} stars:>{min_stars} created:>{since_date}".replace(" ", "+")
         url = f"https://api.github.com/search/repositories?q={q}&sort=stars&order=desc&per_page={limit}"
         try:
             items = http_get_json(url).get("items", [])
@@ -365,18 +383,32 @@ def fetch_github_stars(src: dict, cutoff_ts: float) -> list:
             name = r.get("full_name", "")
             if not name or name in seen:
                 continue
+            description = r.get("description") or ""
+            topics = " ".join(r.get("topics") or [])
+            if not _AI_RE.search(f"{name} {description} {topics}"):
+                continue
+            created_ts = _iso_to_ts(r.get("created_at"))
+            if created_ts and created_ts < recent_cutoff_ts:
+                continue
             seen.add(name)
             stars = r.get("stargazers_count", 0)
             lang = r.get("language") or ""
+            created_at = r.get("created_at")
             out.append(
                 {
-                    "title": f"{name} (⭐{stars // 1000}k{' ' + lang if lang else ''})",
+                    "title": f"{name} (⭐{_format_stars(stars)}{' ' + lang if lang else ''})",
                     "url": r.get("html_url", ""),
                     "source": src["name"],
                     "category": src["category"],
-                    "published_at": r.get("pushed_at"),
-                    "summary_raw": (r.get("description") or "")[:200],
-                    "extra": {"stars": stars, "language": lang},
+                    "published_at": created_at,
+                    "summary_raw": f"近 {lookback_days} 天新项目; stars={stars}; {description[:180]}",
+                    "extra": {
+                        "stars": stars,
+                        "language": lang,
+                        "created_at": created_at,
+                        "pushed_at": r.get("pushed_at"),
+                        "lookback_days": lookback_days,
+                    },
                 }
             )
     out.sort(key=lambda x: -x["extra"]["stars"])
