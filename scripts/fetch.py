@@ -13,8 +13,8 @@ feedparser/httpx 可用则自动升级——裸 Python 3.8+ 即可运行，零�
 
 输出（stdout，JSON）:
     {
-      "items": [{title,url,source,category,published_at,summary_raw,extra}],
-      "dynamic_sources": [{name,query}],   # 交给宿主 agent 用 WebSearch 补抓
+      "items": [{title,url,source,category,tier,published_at,summary_raw,extra}],
+      "dynamic_sources": [{name,query,tier}],   # 交给宿主 agent 用 WebSearch 补抓
       "failed_sources": ["name: reason"],
       "stats": {fetched, sources_ok, sources_failed, window_hours}
     }
@@ -513,8 +513,9 @@ def run(sources: list, since_seconds: float, categories: set | None) -> dict:
             continue
         if categories and src.get("category") not in categories:
             continue
+        tier = src.get("tier", "T2")  # 信源分级，未配置按媒体与社区处理
         if src.get("method") == "dynamic":
-            dynamic.append({"name": src["name"], "query": src.get("query", src["name"])})
+            dynamic.append({"name": src["name"], "query": src.get("query", src["name"]), "tier": tier})
             continue
         fetcher = FETCHERS.get(src.get("method"))
         if not fetcher:
@@ -522,6 +523,8 @@ def run(sources: list, since_seconds: float, categories: set | None) -> dict:
             continue
         try:
             got = fetcher(src, cutoff_ts)
+            for it in got:
+                it.setdefault("tier", tier)
             items.extend(got)
             ok += 1
         except (URLError, Exception) as e:  # noqa: B014 — 单源隔离

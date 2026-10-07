@@ -98,6 +98,29 @@ def test_run_dynamic_routing():
     assert result["stats"]["sources_failed"] == 0
 
 
+def test_run_propagates_source_tier():
+    """条目带上信源分级；未配置 tier 的按 T2；条目自带 tier 时不被覆盖；动态源也带 tier。"""
+
+    def fake_fetcher(src, cutoff_ts):
+        return [{"title": "a", "url": "https://ex.com/a"}, {"title": "b", "url": "https://ex.com/b", "tier": "T1"}]
+
+    old = dict(fetch.FETCHERS)
+    try:
+        fetch.FETCHERS["fake"] = fake_fetcher
+        sources = [
+            {"name": "Official", "category": "vendor", "method": "fake", "tier": "T1_5", "enabled": True},
+            {"name": "NoTier", "category": "media", "method": "fake", "enabled": True},
+            {"name": "X: people", "category": "social", "method": "dynamic", "query": "q", "tier": "T1_5", "enabled": True},
+        ]
+        result = fetch.run(sources, fetch.parse_since("36h"), None)
+    finally:
+        fetch.FETCHERS.clear()
+        fetch.FETCHERS.update(old)
+
+    assert [i["tier"] for i in result["items"]] == ["T1_5", "T1", "T2", "T1"]
+    assert result["dynamic_sources"][0]["tier"] == "T1_5"
+
+
 def test_github_trending_parser():
     p = fetch._TrendingParser()
     p.feed(TRENDING_HTML)

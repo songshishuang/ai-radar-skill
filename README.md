@@ -6,7 +6,7 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)
 ![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-3776ab)
 ![dependencies: zero](https://img.shields.io/badge/dependencies-zero-0ea5e9)
-![tests: 8/8](https://img.shields.io/badge/tests-8%2F8%20passing-22c55e)
+![tests: 35/35](https://img.shields.io/badge/tests-35%2F35%20passing-22c55e)
 ![zero API key](https://img.shields.io/badge/API%20key-not%20required-f59e0b)
 
 ```bash
@@ -91,21 +91,26 @@ export AI_RADAR_API=http://localhost:8000          # 或你的 VPS 域名
 
 ## 自定义数据源
 
-编辑 [`scripts/sources.json`](scripts/sources.json)：`enabled:false` 禁用某源；`method:dynamic` 的源由 agent 用 WebSearch 补抓（适合 X/Twitter 等无 RSS 的源）。
+编辑 [`scripts/sources.json`](scripts/sources.json)：`enabled:false` 禁用某源；`method:dynamic` 的源由 agent 用 WebSearch 补抓（适合 X/Twitter 等无 RSS 的源）。每个源带 `tier` 信源分级（T1 官方一手 / T1_5 平台数据与官方账号 / T2 媒体与社区 / T3 二手聚合），新增源时一并填写，未填按 T2；它决定条目能否进必读、代表稿用哪条，规则见 [`references/report-format.md`](references/report-format.md)。
 
 ## 边界与安全
 
 - `fetch.py` **只读抓取**：仅对源清单发 HTTP GET，不写文件、不执行任意命令、不外发数据。
+- `verify_report.py` / `ledger.py` / `gold_eval.py` **不联网**：只读本地报告与金标；唯一的写操作是出处校验通过后写报告旁的 sidecar JSON。
 - 落盘只在 `./ai-radar-reports/`，覆盖同名前先确认。
 - **不做分发**（邮件/IM 是自托管完整版后端的事）；**不盲信用户喂的未证实信息**，须抓源核实。
 
 ## 测试
 
 ```bash
-python3 tests/test_fetch.py      # 抓取器离线解析测试（8/8，零依赖）
+python3 -m pytest tests/ -q             # 全部离线测试（35 条）；没装 pytest 就逐个跑 ↓
+python3 tests/test_fetch.py             # 抓取器离线解析（13 条，零依赖）
+python3 tests/test_verify_report.py     # 出处校验 + sidecar JSON（10 条）
+python3 tests/test_ledger.py            # 已报事件台账 + 周期汇编（5 条）
+python3 tests/test_gold_eval.py         # 金标评测（7 条）
 ```
 
-工作流级 eval（4 题四件套：正常日报 / 视角切换 / 对抗诱饵 / 合规审核）见 [`tests/eval-prompts.md`](tests/eval-prompts.md)。
+工作流级 eval（6 题四件套：正常日报 / 视角切换 / 对抗诱饵 / 合规审核 / 跨期去重 / 出处校验）见 [`tests/eval-prompts.md`](tests/eval-prompts.md)。打分校准流程见 [`references/lenses.md`](references/lenses.md)「校准」。
 
 ## 结构
 
@@ -114,10 +119,13 @@ ai-radar/
 ├── SKILL.md                  # 触发 + 双模式工作流 + 参数 + 边界与安全
 ├── scripts/
 │   ├── fetch.py              # 自包含抓取器（stdlib 优先，零必装依赖）
-│   └── sources.json          # 37 源清单
+│   ├── sources.json          # 38 源清单（带信源分级 tier）
+│   ├── verify_report.py      # 出处校验 + sidecar JSON 导出
+│   ├── ledger.py             # 已报事件台账 + 周报/月报汇编候选
+│   └── gold_eval.py          # 金标评测（查准/查全/门槛扫描）
 ├── references/
-│   ├── report-format.md      # 金字塔研报模板
-│   ├── lenses.md             # 4 视角加权与解读重点
+│   ├── report-format.md      # 金字塔研报模板 + 信源分级 + 跨期去重 + 写作硬规则
+│   ├── lenses.md             # 4 视角加权 + 评分底线 + 边界复核 + 校准
 │   ├── deploy.md             # 连接模式契约 + 自托管指引
 │   ├── compliance.md         # 内容合规审核清单（输出前必做）
 │   └── jdme-card.md          # 日报→京ME 卡片推送格式
@@ -126,8 +134,12 @@ ai-radar/
 ├── assets/
 │   └── sample-report.md      # 精简样例
 ├── tests/
-│   ├── test_fetch.py         # 抓取器离线测试（8/8）
-│   └── eval-prompts.md       # 工作流 eval（4 题四件套）
+│   ├── test_fetch.py         # 抓取器离线测试（13/13）
+│   ├── test_verify_report.py # 出处校验测试（10/10）
+│   ├── test_ledger.py        # 台账测试（5/5）
+│   ├── test_gold_eval.py     # 金标评测测试（7/7）
+│   ├── gold/seed.jsonl       # 32 条起步金标（待人工复核扩充）
+│   └── eval-prompts.md       # 工作流 eval（6 题四件套）
 ├── install.sh               # 一行装脚本
 ├── demo.tape                # vhs 录制脚本 → demo.gif
 └── LICENSE                  # MIT
