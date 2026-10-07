@@ -83,6 +83,7 @@ def test_within():
 
     old = datetime(2000, 1, 1, tzinfo=timezone.utc).isoformat()
     assert fetch._within(old, now) is False
+    assert fetch._within("2000-01-01T00:00:00Z", now) is False  # Atom 的 Z 后缀，3.11 前 fromisoformat 不认
 
 
 def test_run_dynamic_routing():

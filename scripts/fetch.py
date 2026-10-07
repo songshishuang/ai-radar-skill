@@ -20,6 +20,8 @@ feedparser/httpx 可用则自动升级——裸 Python 3.8+ 即可运行，零�
     }
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import re
@@ -149,7 +151,7 @@ def _within(iso: str | None, cutoff_ts: float) -> bool:
     if not iso:
         return True  # 无时间戳的保留（让 agent 判断）
     try:
-        return datetime.fromisoformat(iso).timestamp() >= cutoff_ts
+        return datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp() >= cutoff_ts
     except ValueError:
         return True
 
