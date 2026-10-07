@@ -13,7 +13,7 @@
 | `subtitle` | `{lens 中文}视角 · ai-radar`（pm→PM / engineer→工程 / investor→投资 / researcher→研究）|
 | `theme` | `red`（日报醒目）；周报 `blue`、月报 `purple` |
 | `banner` | 默认（AI News 配图，jdme-push 内置，不必传）|
-| `button` | `{ "text": "看完整日报", "url": "{在线站对应 period 的 URL}" }` |
+| `button` | `{ "text": "看完整日报", "url": "https://airadar1.web.app/reports/{type}/{period}/" }`。该期还没发布到在线站时不传 `button`，正文也去掉「完整版」一行，免得发出打不开的链接 |
 | `recipients` | **由用户指定**（ERP 含字母 / 群号纯数字），绝不写死、绝不脑补 |
 
 ## 正文 content（me_md）结构

@@ -19,7 +19,7 @@ cp -r ai-radar ~/.claude/skills/ai-radar
 | | |
 |---|---|
 | 👀 **先看产出** | [`samples/daily-sample.md`](samples/daily-sample.md) — 真实生成 59 条 + 5 个 PM 视角深度头条 |
-| 🌐 **在线 demo** | https://songshishuang.github.io/ai-radar/ |
+| 🌐 **在线 demo** | https://airadar1.web.app/ |
 | 📦 **唯一依赖** | Python 3.8+（抓取脚本纯标准库，无需 `pip install`） |
 
 ## 凭什么不是又一个新闻聚合器

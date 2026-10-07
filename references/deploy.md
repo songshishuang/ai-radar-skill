@@ -35,8 +35,8 @@ period 格式：daily=`2026-06-12`，weekly=`2026-W24`（ISO 周），monthly=`2
 
 skill 是**按需的即时研报**。如果用户想要 **7×24 自动运行 + 网站浏览 + 邮件/企业微信/Telegram 推送**，那是完整版「AI 情报站」应用的能力，不在 skill 范围内。指引用户：
 
-- **GitHub 静态站（零服务器）**：仓库 `frontend/` + `.github/workflows/deploy.yml`，本地 `./publish.sh --gen` 生成 → push → 自动部署 GitHub Pages。在线 demo：https://songshishuang.github.io/ai-radar/
+- **静态站（零服务器，Firebase Hosting）**：仓库 `frontend/` + `firebase.json` + `.github/workflows/deploy.yml`，本地 `./publish.sh --gen` 生成，或用 `backend/import_skill_report.py` 导入本 skill 的报告 → push → 自动部署到 Firebase Hosting。在线站：https://airadar1.web.app/
 - **VPS 完整版（含订阅推送）**：仓库 `deploy/` 下 `docker compose up -d`，五容器（Caddy / Next.js / FastAPI+调度 / Postgres / RSSHub），跑定时管道 + 邮件/IM 分发。
-- 两者都把 `AI_RADAR_API` 指过去后，本 skill 即进入连接模式与其同源。
+- VPS 完整版把 `AI_RADAR_API` 指过去后，本 skill 即进入连接模式与其同源。静态站没有 `/api` 接口，不能用于连接模式。
 
 > 一句话定位：**skill = 随手要一份研报；完整版 = 让它每天自己长出来并推给你。** 两者通过 `AI_RADAR_API` 衔接，数据同源。

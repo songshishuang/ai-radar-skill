@@ -24,7 +24,7 @@ description: >-
 
 ## 第一步：判断运行模式
 
-检查环境变量 `AI_RADAR_API`（如 `https://songshishuang.github.io/ai-radar` 的后端，或 `http://localhost:8000`）：
+检查环境变量 `AI_RADAR_API`（自托管完整版的后端地址，如 `https://intel.example.com` 或 `http://localhost:8000`；在线静态站 `https://airadar1.web.app` 没有接口，不能填）：
 
 - **设了 → 连接模式**（优先）：直接复用用户实例已生成的报告，省时且与其网站字节级同源。见下方「连接模式」。
 - **没设 → 独立模式**：用内置脚本现场抓取 + 你来加工生成。见下方「独立模式」。
@@ -165,6 +165,7 @@ python ai-radar/scripts/verify_report.py ./ai-radar-reports/{range}-{period}.md 
 - 默认落盘：`./ai-radar-reports/{range}-{period}.md`（便于用户归档/喂给其它工具）。
   **落盘统一用 shell 写文件**（`cat > 文件 <<'EOF' … EOF` 或等价方式），不要依赖 `Write` 工具——在子代理/受限场景下 `Write` 可能被拦截，shell 写文件则到处都能用。
 - 第 5.5 步通过后，报告旁会有同名 `.json`（schema `ai-radar/report@1`：必读、关注、续报、GitHub 各条的标题、链接、分数、报道面）。
+- **发布到在线站（可选）**：用户要发布时才做，这是公开动作，每次先确认发哪几期；只发通过第 5.5 步出处校验的报告。在完整版仓库（本机 `~/project/report`）执行 `backend/.venv/bin/python backend/import_skill_report.py <报告.md>` 入库，再执行 `./publish.sh` 导出并推送，GitHub Actions 自动部署到 Firebase Hosting。页面地址为 `https://airadar1.web.app/reports/{range}/{period}/`。
 - **分发到京ME（可选）**：用户要把日报推到京ME 时，按 [`references/jdme-card.md`](references/jdme-card.md) 的卡片格式（标题 / 红色主题 / 正文**每条挂超链接** / 「看完整日报」按钮 / 精简扫读版）压成 `params.json`，调 **`jdme-push`** skill 发送（它管凭证 / 内网 / 预览确认 / 回报终态）。**收件人由用户当场指定，绝不脑补**；其它 IM（企微 / 飞书 / 钉钉）同理类推。
 
 ---
